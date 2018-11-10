@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
+#include <stdbool.h>
 #define PI 3.141593
 
 struct Atom {
@@ -24,7 +25,7 @@ struct Input
 {
 
 	char title[40];
-	int restart;
+	int restart;            // seems unused; by NKUCodingCat
 	int atoms;
 	float box[3];
 	list lst[100];				//maximum 100 types
@@ -37,6 +38,7 @@ struct Input
 	int mult[10];
 	float gap;
 	char header[10][128];
+	char tail[65536];
 };
 typedef struct Input input;
 
@@ -72,6 +74,7 @@ int main(int argc, char** argvar)
 		return 1;
 
 	}
+	// return 0;
 	parts=malloc(inp->atoms*(sizeof(int*)));
 	for (i=0; i < inp->atoms; i++)
 		parts[i]=malloc(inp->atoms*(sizeof(int)));
@@ -110,7 +113,7 @@ int main(int argc, char** argvar)
 		char fileName[80];		
 		sprintf(fileName,"%s%d.com",inp->title,file);
 		FILE *com=fopen(fileName,"w");
-		fprintf(com,"%%mem=%dMb\n%%Nprocshared=%d\n%s\nversion 2\n\n%d %d\n", inp->memory, inp->processors, inp->header[0], inp->charge[0], inp->mult[0]);
+		fprintf(com,"%%mem=%dMb\n%%Nprocshared=%d\n%s\nCoal_kick_v2_Trial # %d\n\n%d %d\n", inp->memory, inp->processors, inp->header[0], file, inp->charge[0], inp->mult[0]);
 		for (i=0; i < inp->atoms; i++)
 		{
 			fprintf(com,"%s ",molecule[i].symbol);
@@ -122,6 +125,7 @@ int main(int argc, char** argvar)
 			//		printf(" %d\n",molecule[i].part);
 		}
 		fprintf(com," \n");
+		if(strlen(inp->tail))fprintf(com,inp->tail); 
 		fclose(com);
 	}
 	for (i=0; i < inp->atoms; i++)
@@ -166,7 +170,8 @@ int readInstructions(input* inp, atom *molecule)
 				case ('!'): case ('\n'): case(' '): break;
 				case ('h'): inp->headers=takeHeader(instruction, inp, ins);  
 					    inp->atoms=fillMolecule(instruction, inp, ins, molecule); 
-					    if (inp->atoms==0) error=1; break;
+					    if (inp->atoms==0) error=1; break;	
+				case ('>'): fseek(ins, -(1+strlen(instruction)) ,SEEK_CUR); if ( 1 == getTail(instruction, inp, ins)) error=1; break;
 				default:  printf("unknown instruction: %s\n",instruction);
 			}
 		}
@@ -220,7 +225,33 @@ int takeHeader(char *instruction, input *inp, FILE *ins)
 	return i;		
 }
 
+bool startsWith(const char *pre, const char *str)
+{
+    size_t lenpre = strlen(pre),
+           lenstr = strlen(str);
+    return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
+}
 
+int getTail(char * instruction, input *inp, FILE *ins)
+{
+	char *  line = NULL;
+    size_t  len = 128;
+	ssize_t read;
+
+	read = getline(&line, &len, ins);
+	if(startsWith(">TAIL", line))
+	{
+		while((read = getline(&line, &len, ins)) != -1)
+		{
+			// printf("%s", line);
+			if(startsWith(">ENDTAIL", line)) break; 
+			strcat(inp->tail, line);
+		}
+	}
+	else return 1;
+	printf("************TAIL*************\n%s\n**********TAIL END***********", inp->tail);
+	if (line) free(line); return 0;
+}
 
 
 int fillMolecule(char *instruction, input *inp, FILE *ins, atom *molecule)
