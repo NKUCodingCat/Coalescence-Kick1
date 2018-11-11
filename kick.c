@@ -142,8 +142,10 @@ int readInstructions(input* inp, atom *molecule)
 	char dump[40];
 	FILE *ins;
 	int error=0;
+	ssize_t pre;
 	if (ins=fopen("INS","r"))
 	{
+		pre = ftell(ins);
 		while(fgets(instruction,128,ins))
 		{
 			switch (instruction[0])
@@ -171,9 +173,11 @@ int readInstructions(input* inp, atom *molecule)
 				case ('h'): inp->headers=takeHeader(instruction, inp, ins);  
 					    inp->atoms=fillMolecule(instruction, inp, ins, molecule); 
 					    if (inp->atoms==0) error=1; break;	
-				case ('>'): fseek(ins, -(1+strlen(instruction)) ,SEEK_CUR); if ( 0 != getTail(instruction, inp, ins)) error=1; break;
+				case ('>'): fseek(ins, pre, SEEK_SET);  if ( 0 != getTail(instruction, inp, ins)) error=1; break;
 				default:  printf("unknown instruction: %s\n",instruction);
 			}
+			pre = ftell(ins);
+
 		}
 		fclose(ins);
 		free(instruction);
