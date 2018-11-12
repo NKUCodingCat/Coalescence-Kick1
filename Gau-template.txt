@@ -1,11 +1,11 @@
-%chk=<chk_file>
 %mem=2048Mb
 %Nprocshared=4
-# b3lyp/genecp opt(MaxC=100) maxdisk=1gb scfcyc=25 geom=check
+# b3lyp/genecp opt(MaxC=100) maxdisk=1gb scfcyc=256
 
-Coal_kick_v2_Trial # <Stru_no> - recalc
+Coal_kick_v2_Trial # <Stru_no> - recalc <recal_Count>
 
 0 1
+<Coords>
 
 C O 0
 6-31+G*
