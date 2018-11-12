@@ -132,6 +132,14 @@ int main(int argc, char** argvar)
 		free(parts[i]);
 	free(parts);
 
+	char *p; char tmp[128];
+	for(p=inp->header[0];*p;p++);  while(p--) if(*p > 32 ) break;
+	strcpy(tmp, inp->header[0]);   tmp[p-inp->header[0]]='\0';
+
+	FILE *Templ = fopen("Gau-template.txt", "w");
+	fprintf(Templ,"%%chk=<chk_file>\n%%mem=%dMb\n%%Nprocshared=%d\n%s geom=check\n\nCoal_kick_v2_Trial # <Stru_no> - recalc\n\n%d %d\n\n", inp->memory, inp->processors, tmp, inp->charge[0], inp->mult[0]);
+	if(strlen(inp->tail))fprintf(Templ,inp->tail); 
+	fclose(Templ);
 
 }
 
