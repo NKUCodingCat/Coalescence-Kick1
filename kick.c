@@ -133,7 +133,7 @@ int main(int argc, char** argvar)
 	free(parts);
 
 	FILE *Templ = fopen("Gau-template.txt", "w");
-	fprintf(Templ,"%%mem=%dMb\n%%Nprocshared=%d\n%s\nCoal_kick_v2_Trial # <Stru_no> - recalc <recal_Count>\n\n%d %d\n<Coords>\n\n", inp->memory, inp->processors,  inp->header[0], inp->charge[0], inp->mult[0]);
+	fprintf(Templ,"%%mem=%dMb\n%%Nprocshared=%d\n%s\n<TITLE> - recalc <recal_Count>\n\n%d %d\n<Coords>\n\n", inp->memory, inp->processors,  inp->header[0], inp->charge[0], inp->mult[0]);
 	if(strlen(inp->tail))fprintf(Templ,inp->tail); 
 	fclose(Templ);
 
