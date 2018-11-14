@@ -45,6 +45,7 @@ float atomicRadii(char *symbol, int type)
 	else if (strcasecmp(symbol,"Y")==0)  {if (type==1) r=1.6; else r=1.4;}
 	else if (strcasecmp(symbol,"ZR")==0) {if (type==1) r=1.5; else r=1.4;}
 	else if (strcasecmp(symbol,"NB")==0) {if (type==1) r=1.4; else r=1.4;}
+	else if (strcasecmp(symbol,"AU")==0) {if (type==1) r=1.34; else r=1.79;}
 	return r;
 }
 
