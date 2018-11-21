@@ -1,4 +1,6 @@
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 float atomicRadii(char *symbol, int type)
 {
@@ -46,6 +48,12 @@ float atomicRadii(char *symbol, int type)
 	else if (strcasecmp(symbol,"ZR")==0) {if (type==1) r=1.5; else r=1.4;}
 	else if (strcasecmp(symbol,"NB")==0) {if (type==1) r=1.4; else r=1.4;}
 	else if (strcasecmp(symbol,"AU")==0) {if (type==1) r=1.34; else r=1.79;}
+
+	else{
+		fprintf(stderr, "\n\n!!!!!  CANNOT FIND ELEMENT %s in PeriodicTable.c, Quitting..  !!!!!\n\n", symbol);
+		abort();
+	}
+
 	return r;
 }
 
