@@ -1,61 +1,113 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
-float atomicRadii(char *symbol, int type)
-{
+struct Atom_Rad{
+    char* name;
+    float R_clu;
+    float R_atom;
+};
 
-        float r=0.0;
-	if      (strcasecmp(symbol,"H")==0)  {if (type==1) r=0.4; else r=1.2;}
-	else if (strcasecmp(symbol,"HE")==0) {if (type==1) r=0.3; else r=1.4;}
-	else if (strcasecmp(symbol,"LI")==0) {if (type==1) r=1.3; else r=1.8;}
-	else if (strcasecmp(symbol,"BE")==0) {if (type==1) r=0.9; else r=1.1;}
-	else if (strcasecmp(symbol,"B")==0)  {if (type==1) r=0.8; else r=1.7;}
-	else if (strcasecmp(symbol,"C")==0)  {if (type==1) r=0.8; else r=1.7;}
-	else if (strcasecmp(symbol,"N")==0)  {if (type==1) r=0.8; else r=1.6;}
-	else if (strcasecmp(symbol,"O")==0)  {if (type==1) r=0.7; else r=1.5;}
-	else if (strcasecmp(symbol,"F")==0)  {if (type==1) r=0.7; else r=1.5;}
-	else if (strcasecmp(symbol,"NE")==0) {if (type==1) r=0.7; else r=1.5;}
-	else if (strcasecmp(symbol,"NA")==0) {if (type==1) r=1.5; else r=2.2;}
-	else if (strcasecmp(symbol,"MG")==0) {if (type==1) r=1.3; else r=1.7;}
-	else if (strcasecmp(symbol,"AL")==0) {if (type==1) r=1.2; else r=1.4;}
-	else if (strcasecmp(symbol,"SI")==0) {if (type==1) r=1.1; else r=2.1;}
-	else if (strcasecmp(symbol,"P")==0)  {if (type==1) r=1.1; else r=1.8;}
-	else if (strcasecmp(symbol,"S")==0)  {if (type==1) r=1.0; else r=1.8;}
-	else if (strcasecmp(symbol,"CL")==0) {if (type==1) r=1.0; else r=1.8;}
-	else if (strcasecmp(symbol,"AR")==0) {if (type==1) r=1.0; else r=1.9;}
-	else if (strcasecmp(symbol,"K")==0)  {if (type==1) r=2.0; else r=2.8;}
-	else if (strcasecmp(symbol,"CA")==0) {if (type==1) r=1.7; else r=2.0;}
-	else if (strcasecmp(symbol,"SC")==0) {if (type==1) r=1.4; else r=1.6;}
-	else if (strcasecmp(symbol,"TI")==0) {if (type==1) r=1.4; else r=1.5;}
-	else if (strcasecmp(symbol,"V")==0)  {if (type==1) r=1.3; else r=1.3;}
-	else if (strcasecmp(symbol,"CR")==0) {if (type==1) r=1.3; else r=1.3;}
-	else if (strcasecmp(symbol,"MN")==0) {if (type==1) r=1.4; else r=1.3;}
-	else if (strcasecmp(symbol,"FE")==0) {if (type==1) r=1.3; else r=1.4;}
-	else if (strcasecmp(symbol,"CO")==0) {if (type==1) r=1.3; else r=1.4;}
-	else if (strcasecmp(symbol,"NI")==0) {if (type==1) r=1.2; else r=1.4;}
-	else if (strcasecmp(symbol,"CU")==0) {if (type==1) r=1.4; else r=1.4;}
-	else if (strcasecmp(symbol,"ZN")==0) {if (type==1) r=1.3; else r=1.4;}
-	else if (strcasecmp(symbol,"GA")==0) {if (type==1) r=1.3; else r=1.4;}
-	else if (strcasecmp(symbol,"GE")==0) {if (type==1) r=1.2; else r=1.4;}
-	else if (strcasecmp(symbol,"AS")==0) {if (type==1) r=1.2; else r=1.4;}
-	else if (strcasecmp(symbol,"SE")==0) {if (type==1) r=1.2; else r=1.4;}
-	else if (strcasecmp(symbol,"BR")==0) {if (type==1) r=1.1; else r=1.4;}
-	else if (strcasecmp(symbol,"KR")==0) {if (type==1) r=1.1; else r=1.4;}
-	else if (strcasecmp(symbol,"RB")==0) {if (type==1) r=2.1; else r=1.4;}
-	else if (strcasecmp(symbol,"SR")==0) {if (type==1) r=1.9; else r=1.4;}
-	else if (strcasecmp(symbol,"Y")==0)  {if (type==1) r=1.6; else r=1.4;}
-	else if (strcasecmp(symbol,"ZR")==0) {if (type==1) r=1.5; else r=1.4;}
-	else if (strcasecmp(symbol,"NB")==0) {if (type==1) r=1.4; else r=1.4;}
-	else if (strcasecmp(symbol,"AU")==0) {if (type==1) r=1.34; else r=1.79;}
+struct Atom_Rad Q[] = {
+//    name  s-bond  vdw or matallic
+    { "H" , 0.38, 1.2	},
+    { "He", 0.32, 1.4	},
+    { "Li", 1.34, 1.82	},
+    { "Be", 0.90, 1.53	},
+    { "B" , 0.82, 1.92	},
+    { "C" , 0.77, 1.7	},
+    { "N" , 0.75, 1.55	},
+    { "O" , 0.73, 1.52	},
+    { "F" , 0.71, 1.47	},
+    { "Ne", 0.69, 1.54	},
+    { "Na", 1.54, 2.27	},
+    { "Mg", 1.30, 1.73	},
+    { "Al", 1.18, 1.43	},
+    { "Si", 1.11, 2.1	},
+    { "P" , 1.06, 1.8	},
+    { "S" , 1.02, 1.8	},
+    { "Cl", 0.99, 1.75	},
+    { "Ar", 0.97, 1.88	},
+    { "K" , 1.96, 2.75	},
+    { "Ca", 1.74, 1.97	},
+    { "Sc", 1.44, 1.62	},
+    { "Ti", 1.36, 1.47	},
+    { "V" , 1.25, 1.34	},
+    { "Cr", 1.27, 1.28	},
+    { "Mn", 1.39, 1.27	},
+    { "Fe", 1.25, 1.26	},
+    { "Co", 1.26, 1.25	},
+    { "Ni", 1.21, 1.63	},
+    { "Cu", 1.38, 1.4	},
+    { "Zn", 1.31, 1.39	},
+    { "Ga", 1.26, 1.87	},
+    { "Ge", 1.22, 2.11	},
+    { "As", 1.19, 1.85	},
+    { "Se", 1.16, 1.9	},
+    { "Br", 1.14, 1.85	},
+    { "Kr", 1.10, 2.02	},
+    { "Rb", 2.11, 3.03	},
+    { "Sr", 1.92, 2.49	},
+    { "Y" , 1.62, 1.8	},
+    { "Zr", 1.48, 1.6	},
+    { "Nb", 1.37, 1.46	},
+    { "Mo", 1.45, 1.39	},
+    { "Tc", 1.56, 1.36	},
+    { "Ru", 1.26, 1.34	},
+    { "Rh", 1.35, 1.34	},
+    { "Pd", 1.31, 1.63	},
+    { "Ag", 1.53, 1.72	},
+    { "Cd", 1.48, 1.58	},
+    { "In", 1.44, 1.93	},
+    { "Sn", 1.41, 2.17	},
+    { "Sb", 1.38, 2.06	},
+    { "Te", 1.35, 2.06	},
+    { "I" , 1.33, 1.98	},
+    { "Xe", 1.30, 2.16	},
+    { "Cs", 2.25, 3.43	},
+    { "Ba", 1.98, 2.68	},
+    { "La", 1.69, 1.87	},
+    { "Ce", 1.818, 1.818},
+    { "Pr", 1.824, 1.824},
+    { "Nd", 1.814, 1.814},
+    { "Pm", 1.834, 1.834},
+    { "Sm", 1.804, 1.804},
+    { "Eu", 1.804, 1.804},
+    { "Gd", 1.804, 1.804},
+    { "Tb", 1.773, 1.773},
+    { "Dy", 1.781, 1.781},
+    { "Ho", 1.762, 1.762},
+    { "Er", 1.761, 1.761},
+    { "Tm", 1.759, 1.759},
+    { "Yb", 1.76, 1.76	},
+    { "Lu", 1.60, 1.738	},
+    { "Hf", 1.50, 1.59	},
+    { "Ta", 1.38, 1.46	},
+    { "W" , 1.46, 1.39	},
+    { "Re", 1.59, 1.37	},
+    { "Os", 1.28, 1.35	},
+    { "Ir", 1.37, 1.355	},
+    { "Pt", 1.28, 1.75	},
+    { "Au", 1.44, 1.66	},
+    { "Hg", 1.49, 1.55	},
+    { "Tl", 1.48, 1.96	},
+    { "Pb", 1.47, 2.02	},
+    { "Bi", 1.46, 2.07	}
+}; 
 
-	else{
-		fprintf(stderr, "\n\n!!!!!  CANNOT FIND ELEMENT %s in PeriodicTable.c, Quitting..  !!!!!\n\n", symbol);
-		abort();
-	}
-
-	return r;
+float atomicRadii(char *symbol, int type){
+    for(int i=0; i<(sizeof(Q)/sizeof(struct Atom_Rad)); i++){
+        if (strcasecmp(symbol, Q[i].name)==0) return ((type==1)?Q[i].R_clu:Q[i].R_atom); 
+    }
+    return 0;
 }
 
-
-
+float atomicRadii_s(char *symbol, int type, bool safeCheck){
+    float res = atomicRadii(symbol, type); 
+    if(safeCheck && (res == 0)){
+        fprintf(stderr, "\n\n!!!!!  CANNOT FIND ELEMENT \"%s\" in PeriodicTable.c, Quitting..  !!!!!\n\n", symbol);
+        abort();
+    }
+    return res;
+}

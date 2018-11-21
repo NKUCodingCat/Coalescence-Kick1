@@ -18,6 +18,7 @@ typedef struct Atom atom;
 struct List {
 	char symbol[20];			// maximum 20-1 letters in symbol
 	int  coeff;
+	bool used;
 };
 typedef struct List list;
 
@@ -56,7 +57,8 @@ float dist(atom *molecule, int i, int j);
 int checkParts(atom *mol, input *inp, int **parts);
 void shrink(atom *molecule, input *inp, int **parts);
 
-extern float atomicRadii(char* name, int type);
+// extern float atomicRadii(char* name, int type);
+extern float atomicRadii_s(char *symbol, int type, bool safeCheck);
 
 int main(int argc, char** argvar)
 {
@@ -65,7 +67,7 @@ int main(int argc, char** argvar)
 	int **parts;					// now number of atoms is unlimited
 	int trial=0;
 	int instruct=0;
-	atom molecule[1000];
+	atom molecule[1024];
 	input *inp=malloc(sizeof(input));
 	inp->gap = 1.2;
 	if (readInstructions(inp, molecule)!=0)
@@ -203,6 +205,7 @@ int parse(char *instruction, input *inp)
 	{
 		strcpy(inp->lst[i].symbol,name);
 		inp->lst[i].coeff=coeff;
+		inp->lst[i].used=false;
 		i++;
 		instruction=strchr(instruction,' ');
 		while (instruction[0]==' ') 
@@ -280,6 +283,9 @@ int fillMolecule(char *instruction, input *inp, FILE *ins, atom *molecule)
 		{
 			if((strcmp(nameFrag,inp->lst[fragment].symbol))==0)
 			{
+				
+				if(inp->lst[fragment].used){fprintf(stderr, "\nFragment \"%s\" has been defined twice in atom list\n",nameFrag); abort();}
+
 				atom=0;
 				coeff=inp->lst[fragment].coeff;
 				printf(" coeff %d", coeff);
@@ -288,7 +294,7 @@ int fillMolecule(char *instruction, input *inp, FILE *ins, atom *molecule)
 							&molecule[atom+f].coord[0], &molecule[atom+f].coord[1],
 							&molecule[atom+f].coord[2])==4)
 				{
-					molecule[atom+f].radius=atomicRadii(molecule[atom+f].symbol,type);
+					molecule[atom+f].radius=atomicRadii_s(molecule[atom+f].symbol,type,true);
 					molecule[atom+f].part=part;
 					atom++;
 					if(fgets(instruction,128,ins)==0) 
@@ -306,6 +312,8 @@ int fillMolecule(char *instruction, input *inp, FILE *ins, atom *molecule)
 						molecule[a+c*atom+f].radius=molecule[a+f].radius;
 						molecule[a+c*atom+f].part=part+c;
 					}
+
+				inp->lst[fragment].used = true;
 				break;
 			}
 		}
@@ -313,17 +321,17 @@ int fillMolecule(char *instruction, input *inp, FILE *ins, atom *molecule)
 		part+=c;
 		if (fragment==inp->maxList)
 		{
-			printf("\nFragment %s not found in the atom list\n",nameFrag);
-			return 0;
+			fprintf(stderr, "\nFragment \"%s\" not found in the atom list\n",nameFrag);
+			abort();
 		}
 	}
 	for (atom=0; atom < inp->maxList; atom++)
 	{
-		if (atomicRadii(inp->lst[atom].symbol,1)!=0)
+		if ((atomicRadii_s(inp->lst[atom].symbol,1,false)!=0) && inp->lst[fragment].used)
 		{
 			strcpy(molecule[f].symbol,inp->lst[atom].symbol);
 			molecule[f].part=-1;
-			molecule[f].radius=atomicRadii(inp->lst[atom].symbol,1);			
+			molecule[f].radius=atomicRadii_s(inp->lst[atom].symbol,1,true);			
 
 			for (c=0; c < inp->lst[atom].coeff; c++)
 			{
@@ -332,9 +340,14 @@ int fillMolecule(char *instruction, input *inp, FILE *ins, atom *molecule)
 				molecule[f+c].radius=molecule[f].radius;			
 			}
 			f+=c;
+			inp->lst[atom].used = true;
+		}
+		else {
+			if(false==inp->lst[atom].used) fprintf(stderr, "\n\nWARNING - Fragment/Atom \"%s\" had not been defined in Atom list/Periodictable.c, please check your INS file\n\n", inp->lst[atom].symbol);
 		}
 	}
-	printf("\n %d\n",f);
+	printf("\nTotal atom counts = %d\n",f);
+	for (int i=0; i < inp->maxList; i++) printf(">> %s, %d  -  %s\n", inp->lst[i].symbol,inp->lst[i].coeff, (inp->lst[i].used)?"TRUE":"FALSE");
 	return f;
 }
 
